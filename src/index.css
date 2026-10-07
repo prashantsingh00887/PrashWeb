@@ -110,3 +110,26 @@
     display: none !important;
   }
 }
+
+/* Completely hide any Netlify injected badge, drawer, banner or widget */
+netlify-drawer,
+#netlify-drawer,
+iframe#netlify-drawer,
+[data-netlify-drawer],
+.netlify-badge,
+.netlify-feedback-drawer,
+div[class*="netlify-drawer"],
+a[href*="netlify.com/powered-by"],
+a[href*="netlify.com"][class*="badge"],
+div[class*="netlify-badge"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  z-index: -99999 !important;
+}

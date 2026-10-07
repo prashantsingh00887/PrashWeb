@@ -2,6 +2,13 @@
   command = "npm run build"
   publish = "dist"
 
+[build.processing]
+  skip_processing = true
+
+[context.production.environment]
+  NETLIFY_DRAWER = "false"
+  NETLIFY_ENABLE_FEEDBACK = "false"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
