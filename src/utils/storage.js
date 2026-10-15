@@ -77,3 +77,26 @@ export const readFileAsDataURL = (file) => {
     reader.readAsDataURL(file);
   });
 };
+
+// Upload media to Cloudinary via /api/upload with fallback to base64
+export const uploadMedia = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.url) {
+        console.log('[Cloudinary] Successfully uploaded media:', data.url);
+        return data.url;
+      }
+    }
+  } catch (err) {
+    console.warn('[Cloudinary] Upload failed, falling back to local base64:', err);
+  }
+  return await readFileAsDataURL(file);
+};
+

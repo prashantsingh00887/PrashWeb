@@ -28,7 +28,7 @@ import {
   Video,
   Image as ImageIcon
 } from 'lucide-react';
-import { readFileAsDataURL } from '../utils/storage';
+import { uploadMedia } from '../utils/storage';
 
 export const AdminModal = () => {
   const { 
@@ -416,8 +416,8 @@ const ProfileAdminTab = ({ profile, onSave }) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const base64 = await readFileAsDataURL(file);
-        setForm(prev => ({ ...prev, avatarUrl: base64 }));
+        const url = await uploadMedia(file);
+        setForm(prev => ({ ...prev, avatarUrl: url }));
       } catch (err) {
         console.error(err);
       }
@@ -1043,11 +1043,11 @@ const ProjectsAdminTab = ({ projects, onAdd, onUpdate, onDelete }) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const base64 = await readFileAsDataURL(file);
+        const url = await uploadMedia(file);
         setForm(prev => ({ 
           ...prev, 
-          image: base64,
-          screenshots: [base64, ...(prev.screenshots || [])]
+          image: url,
+          screenshots: [url, ...(prev.screenshots || [])]
         }));
       } catch (err) {
         console.error(err);
@@ -1326,8 +1326,8 @@ const CertificatesAdminTab = ({ certificates, onAdd, onUpdate, onDelete }) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const base64 = await readFileAsDataURL(file);
-        setForm(prev => ({ ...prev, image: base64 }));
+        const url = await uploadMedia(file);
+        setForm(prev => ({ ...prev, image: url }));
       } catch (err) {
         console.error(err);
       }
@@ -1539,11 +1539,11 @@ const AchievementsAdminTab = ({ achievements, onAdd, onUpdate, onDelete }) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const base64 = await readFileAsDataURL(file);
+        const url = await uploadMedia(file);
         const isVid = file.type.startsWith('video');
         setForm(prev => ({ 
           ...prev, 
-          mediaUrl: base64, 
+          mediaUrl: url, 
           mediaType: isVid ? 'video' : 'image' 
         }));
       } catch (err) {
@@ -1740,8 +1740,8 @@ const CvAdminTab = ({ adminConfig, onUpdateCv }) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const base64 = await readFileAsDataURL(file);
-        onUpdateCv(file.name, base64);
+        const url = await uploadMedia(file);
+        onUpdateCv(file.name, url);
       } catch (err) {
         console.error(err);
       }

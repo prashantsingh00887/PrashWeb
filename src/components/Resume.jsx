@@ -16,7 +16,7 @@ import {
   Linkedin,
   Github
 } from 'lucide-react';
-import { readFileAsDataURL } from '../utils/storage';
+import { uploadMedia } from '../utils/storage';
 
 export const Resume = () => {
   const { data, updateCustomCv, setIsAdminOpen, isAdminAuthenticated } = usePortfolio();
@@ -26,8 +26,8 @@ export const Resume = () => {
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const base64 = await readFileAsDataURL(file);
-        updateCustomCv(file.name, base64);
+        const url = await uploadMedia(file);
+        updateCustomCv(file.name, url);
         alert(`Successfully uploaded and updated CV: ${file.name}`);
       } catch (err) {
         console.error('Failed to upload CV:', err);

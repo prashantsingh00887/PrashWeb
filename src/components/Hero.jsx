@@ -14,7 +14,7 @@ import {
   ExternalLink,
   ChevronDown
 } from 'lucide-react';
-import { readFileAsDataURL } from '../utils/storage';
+import { uploadMedia } from '../utils/storage';
 
 export const Hero = () => {
   const { data, updateProfile, setIsAdminOpen, isAdminAuthenticated } = usePortfolio();
@@ -24,8 +24,8 @@ export const Hero = () => {
     const file = e.target.files?.[0];
     if (file) {
       try {
-        const base64 = await readFileAsDataURL(file);
-        updateProfile({ avatarUrl: base64 });
+        const url = await uploadMedia(file);
+        updateProfile({ avatarUrl: url });
       } catch (err) {
         console.error('Error uploading photo:', err);
       }

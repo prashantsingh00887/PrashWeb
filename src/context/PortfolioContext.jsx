@@ -24,10 +24,45 @@ export const PortfolioProvider = ({ children }) => {
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [isAiOpen, setIsAiOpen] = useState(false);
 
-  // Synchronize data changes to localStorage
+  // Load live data from MongoDB Atlas on startup
+  useEffect(() => {
+    let isMounted = true;
+    fetch('/api/portfolio')
+      .then(res => res.ok ? res.json() : null)
+      .then(cloudData => {
+        if (isMounted && cloudData && cloudData.profile) {
+          setData(prev => {
+            const merged = {
+              ...prev,
+              ...cloudData,
+              profile: { ...prev.profile, ...cloudData.profile },
+              adminConfig: { ...prev.adminConfig, ...(cloudData.adminConfig || {}) }
+            };
+            saveStoredData(merged);
+            return merged;
+          });
+        }
+      })
+      .catch(err => {
+        console.log('[PortfolioContext] Running with cached/default data:', err.message);
+      });
+    return () => { isMounted = false; };
+  }, []);
+
+  // Synchronize data changes to localStorage and MongoDB Atlas (if authenticated admin)
   useEffect(() => {
     saveStoredData(data);
-  }, [data]);
+    if (isAdminAuthenticated) {
+      const timer = setTimeout(() => {
+        fetch('/api/portfolio', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        }).catch(err => console.warn('[MongoDB Atlas] Sync error:', err.message));
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [data, isAdminAuthenticated]);
 
   // Discreet Admin Triggers: URL hash (#admin or #cms) and keyboard shortcut (Ctrl+Shift+A)
   useEffect(() => {
@@ -233,7 +268,7 @@ export const PortfolioProvider = ({ children }) => {
   };
 
   // Contact form messages
-  const addMessage = (msg) => {
+  const addMessage = async (msg) => {
     const newMsg = {
       ...msg,
       id: `msg-${Date.now()}`,
@@ -243,6 +278,16 @@ export const PortfolioProvider = ({ children }) => {
       ...prev,
       messages: [newMsg, ...(prev.messages || [])]
     }));
+
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newMsg)
+      });
+    } catch (err) {
+      console.warn('Failed to send contact message to cloud:', err);
+    }
   };
 
   const deleteMessage = (id) => {
