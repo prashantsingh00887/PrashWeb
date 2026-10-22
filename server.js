@@ -25,16 +25,16 @@ app.use(express.static(DIST_DIR, {
   }
 }));
 
-// Fallback for unmatched API routes
-app.all('/api/*', (req, res) => {
+// Fallback for unmatched API routes (Express 5 compatible)
+app.use('/api', (req, res) => {
   res.status(404).json({
-    error: `API route not found: ${req.method} ${req.path}`,
+    error: `API route not found: ${req.method} ${req.originalUrl}`,
     status: 404
   });
 });
 
-// SPA fallback for client-side routing
-app.get('*', (req, res) => {
+// SPA fallback for client-side routing (Express 5 compatible catch-all)
+app.use((req, res) => {
   const indexPath = path.join(DIST_DIR, 'index.html');
   if (fs.existsSync(indexPath)) {
     return res.sendFile(indexPath);
