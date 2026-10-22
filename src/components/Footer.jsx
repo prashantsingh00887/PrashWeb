@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 
 export const Footer = () => {
-  const { data, setIsAiOpen } = usePortfolio();
+  const { data, setIsAiOpen, setIsAdminOpen } = usePortfolio();
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -167,8 +167,16 @@ export const Footer = () => {
 
         {/* Bottom Bar: Copyright & Back to Top */}
         <div className="pt-8 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
-          <div>
-            © 2026 Prashant Singh. All Rights Reserved.
+          <div className="flex items-center gap-3">
+            <span>© 2026 Prashant Singh. All Rights Reserved.</span>
+            <span>•</span>
+            <button
+              onClick={() => setIsAdminOpen(true)}
+              className="text-slate-400 hover:text-indigo-500 transition-colors underline-offset-4 hover:underline"
+              title="Admin Portal Login"
+            >
+              Admin Portal
+            </button>
           </div>
 
           <div className="flex items-center gap-4">

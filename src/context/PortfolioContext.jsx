@@ -65,15 +65,29 @@ export const PortfolioProvider = ({ children }) => {
     }
   }, [data, isAdminAuthenticated]);
 
-  // Discreet Admin Triggers: URL hash (#admin or #cms) and keyboard shortcut (Ctrl+Shift+A)
+  // Admin Triggers: URL pathname (/admin, /admin/login, /Admin/login), URL hash (#admin, #cms), and shortcut (Ctrl+Shift+A)
   useEffect(() => {
-    const checkHash = () => {
-      if (window.location.hash === '#admin' || window.location.hash === '#cms') {
+    const checkAdminRoute = () => {
+      const hash = (window.location.hash || '').toLowerCase();
+      const rawPath = (window.location.pathname || '').toLowerCase();
+      const cleanPath = rawPath.replace(/\/+/g, '/').replace(/\/$/, '');
+
+      if (
+        hash === '#admin' ||
+        hash === '#cms' ||
+        cleanPath === '/admin' ||
+        cleanPath === '/admin/login' ||
+        cleanPath === '/login' ||
+        cleanPath === '/cms' ||
+        cleanPath.startsWith('/admin')
+      ) {
         setIsAdminOpen(true);
       }
     };
-    checkHash();
-    window.addEventListener('hashchange', checkHash);
+
+    checkAdminRoute();
+    window.addEventListener('hashchange', checkAdminRoute);
+    window.addEventListener('popstate', checkAdminRoute);
 
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
@@ -84,7 +98,8 @@ export const PortfolioProvider = ({ children }) => {
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      window.removeEventListener('hashchange', checkHash);
+      window.removeEventListener('hashchange', checkAdminRoute);
+      window.removeEventListener('popstate', checkAdminRoute);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
