@@ -1,0 +1,26 @@
+# Render Blueprint configuration for PrashWeb
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: prashweb
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: node server.js
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        value: mongodb://prashantsingh00887_db_user:W8PwQ1XlbcmZMmYT@ac-aquqavm-shard-00-00.1egwvkp.mongodb.net:27017,ac-aquqavm-shard-00-01.1egwvkp.mongodb.net:27017,ac-aquqavm-shard-00-02.1egwvkp.mongodb.net:27017/prashweb?ssl=true&replicaSet=atlas-b2lkkq-shard-0&authSource=admin&compressors=zlib
+      - key: CLOUDINARY_CLOUD_NAME
+        value: ggb1dd3d
+      - key: CLOUDINARY_API_KEY
+        value: 116273271835525
+      - key: CLOUDINARY_API_SECRET
+        value: 0YjKg2DD7ltpOGpSTfh9fGCs-EQ
+      - key: CLOUDINARY_URL
+        value: cloudinary://116273271835525:0YjKg2DD7ltpOGpSTfh9fGCs-EQ@ggb1dd3d

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { defaultPortfolioData } from '../data/defaultData';
 import { loadStoredData, saveStoredData, resetStoredData, exportDataAsJSON } from '../utils/storage';
+import { getApiUrl } from '../utils/apiConfig';
 
 const PortfolioContext = createContext(null);
 
@@ -27,7 +28,7 @@ export const PortfolioProvider = ({ children }) => {
   // Load live data from MongoDB Atlas on startup
   useEffect(() => {
     let isMounted = true;
-    fetch('/api/portfolio')
+    fetch(getApiUrl('/api/portfolio'))
       .then(res => res.ok ? res.json() : null)
       .then(cloudData => {
         if (isMounted && cloudData && cloudData.profile) {
@@ -54,7 +55,7 @@ export const PortfolioProvider = ({ children }) => {
     saveStoredData(data);
     if (isAdminAuthenticated) {
       const timer = setTimeout(() => {
-        fetch('/api/portfolio', {
+        fetch(getApiUrl('/api/portfolio'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
@@ -280,7 +281,7 @@ export const PortfolioProvider = ({ children }) => {
     }));
 
     try {
-      await fetch('/api/contact', {
+      await fetch(getApiUrl('/api/contact'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newMsg)

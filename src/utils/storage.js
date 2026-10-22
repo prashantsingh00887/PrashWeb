@@ -1,4 +1,5 @@
 // Storage utilities for PrashWeb
+import { getApiUrl } from './apiConfig';
 
 const STORAGE_KEY = 'prashweb_portfolio_data_v1';
 
@@ -83,7 +84,7 @@ export const uploadMedia = async (file) => {
   try {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch('/api/upload', {
+    const res = await fetch(getApiUrl('/api/upload'), {
       method: 'POST',
       body: formData
     });
