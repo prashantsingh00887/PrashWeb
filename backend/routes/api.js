@@ -41,6 +41,19 @@ router.get('/health', (req, res) => {
   });
 });
 
+// Helper to remove any duplicate items by id, _id, or title
+const dedupeCollection = (list) => {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set();
+  return list.filter(item => {
+    if (!item || typeof item !== 'object') return false;
+    const key = String(item.id || item._id || item.title || item.name || '').trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
 // 1. GET /api/portfolio - Fetch complete portfolio data from MongoDB Atlas
 router.get('/portfolio', async (req, res) => {
   try {
@@ -52,7 +65,15 @@ router.get('/portfolio', async (req, res) => {
       portfolio = await Portfolio.create(defaultPortfolioData);
     }
 
-    res.json(portfolio);
+    const doc = portfolio.toObject ? portfolio.toObject() : portfolio;
+    // Ensure clean deduplication on read
+    doc.projects = dedupeCollection(doc.projects);
+    doc.skills = dedupeCollection(doc.skills);
+    doc.education = dedupeCollection(doc.education);
+    doc.certificates = dedupeCollection(doc.certificates);
+    doc.achievements = dedupeCollection(doc.achievements);
+
+    res.json(doc);
   } catch (err) {
     console.error('Error in GET /api/portfolio:', err);
     // Graceful fallback to default data if DB is temporarily unreachable
@@ -68,16 +89,22 @@ router.post('/portfolio', async (req, res) => {
       return res.status(400).json({ error: 'Invalid portfolio data payload' });
     }
 
-    // Upsert into MongoDB
-    let portfolio = await Portfolio.findOne().sort({ updatedAt: -1 });
-    if (portfolio) {
-      Object.assign(portfolio, updateData);
-      await portfolio.save();
-    } else {
-      portfolio = await Portfolio.create(updateData);
-    }
+    // Clean deduplication before saving
+    if (Array.isArray(updateData.projects)) updateData.projects = dedupeCollection(updateData.projects);
+    if (Array.isArray(updateData.skills)) updateData.skills = dedupeCollection(updateData.skills);
+    if (Array.isArray(updateData.education)) updateData.education = dedupeCollection(updateData.education);
+    if (Array.isArray(updateData.certificates)) updateData.certificates = dedupeCollection(updateData.certificates);
+    if (Array.isArray(updateData.achievements)) updateData.achievements = dedupeCollection(updateData.achievements);
+    if (Array.isArray(updateData.messages)) updateData.messages = dedupeCollection(updateData.messages);
 
-    console.log('[MongoDB Atlas] Portfolio data updated successfully.');
+    // Atomic update/upsert into MongoDB
+    let portfolio = await Portfolio.findOneAndUpdate(
+      {},
+      { $set: updateData },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    console.log('[MongoDB Atlas] Portfolio data updated and deduplicated successfully.');
     res.json({ success: true, data: portfolio });
   } catch (err) {
     console.error('Error in POST /api/portfolio:', err);

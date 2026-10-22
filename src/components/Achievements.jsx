@@ -112,6 +112,8 @@ export const Achievements = () => {
                     <img
                       src={item.mediaUrl}
                       alt={item.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   )}

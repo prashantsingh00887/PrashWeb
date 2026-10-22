@@ -3,31 +3,38 @@ import { getApiUrl } from './apiConfig';
 
 const STORAGE_KEY = 'prashweb_portfolio_data_v1';
 
+// Helper to remove duplicates from an array of objects
+export const dedupeList = (list) => {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set();
+  return list.filter(item => {
+    if (!item || typeof item !== 'object') return false;
+    const key = String(item.id || item._id || item.title || item.name || '').trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
 export const loadStoredData = (defaultData) => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultData;
     const parsed = JSON.parse(raw);
-    // Ensure all critical top-level keys exist by shallow merging with defaultData
+
     const profile = { ...defaultData.profile, ...(parsed.profile || {}) };
     if (!profile.github || profile.github === 'https://github.com' || profile.github === 'https://github.com/prashantsingh') {
       profile.github = 'https://github.com/prashantsingh00887';
     }
 
-    const projects = (parsed.projects || defaultData.projects).map((proj, idx) => {
-      const defaultProj = defaultData.projects[idx];
-      let gh = proj.github;
-      if (!gh || gh === 'https://github.com' || gh === 'https://github.com/prashantsingh') {
-        gh = defaultProj?.github || 'https://github.com/prashantsingh00887';
-      }
-      return { ...proj, github: gh };
-    });
-
     return {
-      ...defaultData,
-      ...parsed,
       profile,
-      projects,
+      education: dedupeList(parsed.education || defaultData.education),
+      skills: dedupeList(parsed.skills || defaultData.skills),
+      projects: dedupeList(parsed.projects || defaultData.projects),
+      certificates: dedupeList(parsed.certificates || defaultData.certificates),
+      achievements: dedupeList(parsed.achievements || defaultData.achievements),
+      messages: dedupeList(parsed.messages || []),
       adminConfig: { ...defaultData.adminConfig, ...(parsed.adminConfig || {}) }
     };
   } catch (err) {

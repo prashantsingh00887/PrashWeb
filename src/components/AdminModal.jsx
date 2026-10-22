@@ -26,7 +26,14 @@ import {
   LogOut,
   RefreshCw,
   Video,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Camera,
+  ExternalLink,
+  Github,
+  Phone,
+  MapPin,
+  Sparkles,
+  Briefcase
 } from 'lucide-react';
 import { uploadMedia } from '../utils/storage';
 
@@ -161,66 +168,77 @@ export const AdminModal = () => {
       onClick={() => setIsAdminOpen(false)}
     >
       <div 
-        className="relative w-full max-w-6xl max-h-[94vh] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden"
+        className="relative w-full max-w-6xl h-[94vh] max-h-[94vh] bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         
         {/* Admin Header */}
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/80 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold">
+        <div className="px-4 sm:px-6 py-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-sm flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-500/20 shrink-0">
               <Unlock className="w-5 h-5" />
             </div>
-            <div>
-              <h2 className="text-lg font-bold font-heading text-slate-900 dark:text-white flex items-center gap-2">
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg font-bold font-heading text-slate-900 dark:text-white flex items-center gap-2 truncate">
                 <span>PrashWeb CMS Dashboard</span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 text-[10px] font-bold">
-                  Live
+                <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/20 shrink-0">
+                  Live Sync
                 </span>
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Logged in as Prashant Singh • Changes update instantly
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                Admin: {data.profile?.name || 'Prashant Singh'} • Auto-syncing with MongoDB & Cloudinary
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {saveNotification && (
-              <span className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-lg">
+              <span className="hidden md:inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1.5 rounded-xl border border-emerald-500/20">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 {saveNotification}
               </span>
             )}
 
             <button
+              onClick={() => setIsAdminOpen(false)}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              title="Preview Website"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Preview Site</span>
+            </button>
+
+            <button
               onClick={logoutAdmin}
-              className="p-2 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 sm:px-3 sm:py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors flex items-center gap-1"
               title="Logout from Admin"
             >
               <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Logout</span>
             </button>
 
             <button
               onClick={() => setIsAdminOpen(false)}
               className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Close Admin Modal"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="px-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-1 overflow-x-auto text-xs font-semibold scrollbar-none py-2">
+        {/* Tab Navigation - Modern Pill Navigation with Hidden Scrollbar */}
+        <div className="px-3 sm:px-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-1.5 overflow-x-auto text-xs font-semibold py-2.5 shrink-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {[
-            { id: 'profile', label: 'Profile & Bio', icon: User },
-            { id: 'education', label: `Education (${data.education.length})`, icon: GraduationCap },
-            { id: 'skills', label: `Skills (${data.skills.length})`, icon: Code2 },
-            { id: 'projects', label: `Projects (${data.projects.length})`, icon: FolderGit2 },
-            { id: 'certificates', label: `Certificates (${data.certificates.length})`, icon: Award },
-            { id: 'achievements', label: `Memories (${data.achievements.length})`, icon: Trophy },
-            { id: 'cv', label: 'Resume / CV', icon: FileText },
-            { id: 'messages', label: `Messages (${data.messages?.length || 0})`, icon: Mail },
-            { id: 'backup', label: 'Backup & Settings', icon: Database },
+            { id: 'profile', label: 'Profile & Bio', count: null, icon: User },
+            { id: 'education', label: 'Education', count: data.education.length, icon: GraduationCap },
+            { id: 'skills', label: 'Skills', count: data.skills.length, icon: Code2 },
+            { id: 'projects', label: 'Projects', count: data.projects.length, icon: FolderGit2 },
+            { id: 'certificates', label: 'Certificates', count: data.certificates.length, icon: Award },
+            { id: 'achievements', label: 'Memories', count: data.achievements.length, icon: Trophy },
+            { id: 'cv', label: 'Resume / CV', count: null, icon: FileText },
+            { id: 'messages', label: 'Messages', count: data.messages?.length || 0, icon: Mail },
+            { id: 'backup', label: 'Backup & Settings', count: null, icon: Database },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -231,14 +249,21 @@ export const AdminModal = () => {
                   setActiveTab(tab.id);
                   setEditingItem(null);
                 }}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl whitespace-nowrap transition-all ${
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl whitespace-nowrap text-xs font-semibold transition-all shrink-0 ${
                   active
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-600/30'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-200/50 dark:border-slate-800/50'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className="w-3.5 h-3.5 shrink-0" />
                 <span>{tab.label}</span>
+                {typeof tab.count === 'number' && (
+                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                    active ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                  }`}>
+                    {tab.count}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -410,180 +435,264 @@ export const AdminModal = () => {
 // 1. Profile Admin Tab
 const ProfileAdminTab = ({ profile, onSave }) => {
   const [form, setForm] = useState(profile);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       try {
+        setIsUploading(true);
         const url = await uploadMedia(file);
         setForm(prev => ({ ...prev, avatarUrl: url }));
       } catch (err) {
         console.error(err);
+      } finally {
+        setIsUploading(false);
       }
     }
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(form);
+  };
+
   return (
-    <form 
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSave(form);
-      }} 
-      className="space-y-6"
-    >
-      <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Header with Quick Save */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 gap-3">
         <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">Profile Details</h3>
-          <p className="text-xs text-slate-500">Edit personal introduction, contact, and bio visible across the site.</p>
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <User className="w-5 h-5 text-indigo-500" />
+            <span>Profile & Personal Information</span>
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Edit your introduction, contact numbers, social profiles, and profile photo.
+          </p>
         </div>
         <button
           type="submit"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-500 shadow-md"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/25 transition-all self-start sm:self-auto"
         >
-          <Save className="w-4 h-4" /> Save Profile
+          <Save className="w-4 h-4" />
+          <span>Save Profile Changes</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-        <div>
-          <label className="block font-semibold mb-1">Full Name</label>
-          <input
-            type="text"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+      {/* Profile Photo Card */}
+      <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex flex-col sm:flex-row items-center sm:items-start gap-5">
+        <div className="relative group shrink-0">
+          <img
+            src={form.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=800"}
+            alt="Profile Preview"
+            className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-4 ring-indigo-500/20 shadow-md"
           />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute inset-0 rounded-2xl bg-black/40 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+            title="Upload photo"
+          >
+            <Camera className="w-6 h-6" />
+          </button>
         </div>
 
-        <div>
-          <label className="block font-semibold mb-1">Headline / Subtitle</label>
-          <input
-            type="text"
-            value={form.headline}
-            onChange={(e) => setForm({ ...form, headline: e.target.value })}
-            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-          />
-        </div>
+        <div className="flex-1 space-y-2 w-full text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">Profile Picture</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Upload to Cloudinary or paste direct image URL</p>
+            </div>
+            <div className="flex items-center justify-center sm:justify-start gap-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handlePhotoUpload}
+                accept="image/*"
+                className="hidden"
+              />
+              <button
+                type="button"
+                disabled={isUploading}
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors shadow-sm disabled:opacity-50"
+              >
+                <Upload className="w-3.5 h-3.5 text-indigo-500" />
+                <span>{isUploading ? 'Uploading...' : 'Upload New Photo'}</span>
+              </button>
+            </div>
+          </div>
 
-        <div>
-          <label className="block font-semibold mb-1">Mobile Number</label>
-          <input
-            type="text"
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-          />
-        </div>
-
-        <div>
-          <label className="block font-semibold mb-1">Email Address</label>
-          <input
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-          />
-        </div>
-
-        <div>
-          <label className="block font-semibold mb-1">LinkedIn Profile URL</label>
-          <input
-            type="text"
-            value={form.linkedin}
-            onChange={(e) => setForm({ ...form, linkedin: e.target.value })}
-            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-          />
-        </div>
-
-        <div>
-          <label className="block font-semibold mb-1">GitHub Profile URL</label>
-          <input
-            type="text"
-            placeholder="https://github.com/prashantsingh00887"
-            value={form.github || ''}
-            onChange={(e) => setForm({ ...form, github: e.target.value })}
-            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-          />
-        </div>
-
-        <div>
-          <label className="block font-semibold mb-1">Location</label>
-          <input
-            type="text"
-            value={form.location}
-            onChange={(e) => setForm({ ...form, location: e.target.value })}
-            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-          />
-        </div>
-      </div>
-
-      {/* Avatar upload */}
-      <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-center gap-4">
-        <img
-          src={form.avatarUrl}
-          alt="Avatar Preview"
-          className="w-16 h-16 rounded-2xl object-cover border border-slate-300 dark:border-slate-600"
-        />
-        <div className="space-y-1">
-          <label className="block text-xs font-bold text-slate-900 dark:text-white">Profile Photo</label>
-          <div className="flex items-center gap-2">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handlePhotoUpload}
-              accept="image/*"
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:bg-slate-100"
-            >
-              Upload New Photo
-            </button>
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+              Image Direct URL
+            </label>
             <input
               type="text"
-              placeholder="Or paste image URL"
-              value={form.avatarUrl}
+              placeholder="https://images.unsplash.com/... or Cloudinary URL"
+              value={form.avatarUrl || ''}
               onChange={(e) => setForm({ ...form, avatarUrl: e.target.value })}
-              className="px-2 py-1 text-xs rounded-lg bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 w-64"
+              className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-700/80 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
             />
           </div>
         </div>
       </div>
 
-      {/* About text areas */}
-      <div className="space-y-4 text-xs">
+      {/* 2-Column Responsive Information Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
         <div>
-          <label className="block font-semibold mb-1">About Introduction</label>
+          <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Full Name
+          </label>
+          <input
+            type="text"
+            value={form.name || ''}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Headline / Subtitle
+          </label>
+          <input
+            type="text"
+            value={form.headline || ''}
+            onChange={(e) => setForm({ ...form, headline: e.target.value })}
+            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Mobile Number
+          </label>
+          <input
+            type="text"
+            value={form.phone || ''}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <div>
+          <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Email Address
+          </label>
+          <input
+            type="email"
+            value={form.email || ''}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            LinkedIn Profile URL
+          </label>
+          <input
+            type="text"
+            placeholder="https://linkedin.com/in/..."
+            value={form.linkedin || ''}
+            onChange={(e) => setForm({ ...form, linkedin: e.target.value })}
+            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <div>
+          <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            GitHub Profile URL
+          </label>
+          <input
+            type="text"
+            placeholder="https://github.com/prashantsingh00887"
+            value={form.github || ''}
+            onChange={(e) => setForm({ ...form, github: e.target.value })}
+            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <div>
+          <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Location
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. India"
+            value={form.location || ''}
+            onChange={(e) => setForm({ ...form, location: e.target.value })}
+            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <div>
+          <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Current Status / Badge
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. Open to Internships & Opportunities"
+            value={form.status || ''}
+            onChange={(e) => setForm({ ...form, status: e.target.value })}
+            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+      </div>
+
+      {/* Narrative Bios */}
+      <div className="space-y-4 text-xs pt-2">
+        <div>
+          <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            About Introduction
+          </label>
           <textarea
             rows={3}
-            value={form.aboutIntro}
+            value={form.aboutIntro || ''}
             onChange={(e) => setForm({ ...form, aboutIntro: e.target.value })}
-            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 leading-relaxed"
           ></textarea>
         </div>
 
         <div>
-          <label className="block font-semibold mb-1">Career Objective</label>
+          <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Career Objective
+          </label>
           <textarea
             rows={2}
-            value={form.careerObjective}
+            value={form.careerObjective || ''}
             onChange={(e) => setForm({ ...form, careerObjective: e.target.value })}
-            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 leading-relaxed"
           ></textarea>
         </div>
 
         <div>
-          <label className="block font-semibold mb-1">Professional Goals</label>
+          <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Professional Goals
+          </label>
           <textarea
             rows={2}
-            value={form.professionalGoals}
+            value={form.professionalGoals || ''}
             onChange={(e) => setForm({ ...form, professionalGoals: e.target.value })}
-            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 leading-relaxed"
           ></textarea>
         </div>
+      </div>
+
+      {/* Sticky Bottom Save Action */}
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+        <button
+          type="submit"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all"
+        >
+          <Save className="w-4 h-4" />
+          <span>Save Profile Changes</span>
+        </button>
       </div>
     </form>
   );
@@ -1253,43 +1362,108 @@ const ProjectsAdminTab = ({ projects, onAdd, onUpdate, onDelete }) => {
           </div>
         </form>
       ) : (
-        <div className="space-y-3">
-          {projects.map((proj) => (
-            <div
-              key={proj.id}
-              className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between gap-4"
-            >
-              <div className="flex items-center gap-3">
-                <img src={proj.image} alt={proj.title} className="w-16 h-12 rounded-xl object-cover shrink-0" />
-                <div>
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">
-                    {proj.title}
-                  </h4>
-                  <p className="text-xs text-indigo-600 dark:text-indigo-400">
-                    {proj.category} • {proj.technologies.slice(0, 3).join(', ')}
-                  </p>
-                </div>
+        <>
+          {projects.length === 0 ? (
+            <div className="p-12 text-center rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 space-y-3">
+              <FolderGit2 className="w-10 h-10 text-slate-400 mx-auto" />
+              <div>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">No Projects Listed Yet</h4>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+                  Click "Add New Project" to add your first real-world software project with photos, tech stack, and links.
+                </p>
               </div>
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  onClick={() => startEdit(proj)}
-                  className="p-2 rounded-lg bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-500 shadow-xs"
-                >
-                  <Edit className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => {
-                    if (window.confirm(`Delete ${proj.title}?`)) onDelete(proj.id);
-                  }}
-                  className="p-2 rounded-lg bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-rose-500 shadow-xs"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              <button
+                onClick={startNew}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-500 shadow-md"
+              >
+                <Plus className="w-4 h-4" /> Add Your First Project
+              </button>
             </div>
-          ))}
-        </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {projects.map((proj) => (
+                <div
+                  key={proj.id}
+                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex flex-col justify-between group hover:border-indigo-500/50 transition-all shadow-sm"
+                >
+                  <div className="space-y-3">
+                    <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-slate-900">
+                      <img 
+                        src={proj.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df87"} 
+                        alt={proj.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                      />
+                      <span className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-950/80 backdrop-blur-md text-white border border-white/10">
+                        {proj.category}
+                      </span>
+                      {proj.featured && (
+                        <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/90 text-white flex items-center gap-1 shadow-xs">
+                          ★ Featured
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white line-clamp-1">
+                        {proj.title}
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
+                        {proj.tagline || proj.description}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1">
+                      {(proj.technologies || []).slice(0, 4).map((tech, idx) => (
+                        <span key={idx} className="px-2 py-0.5 rounded-md text-[10px] bg-slate-200/80 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 font-medium">
+                          {tech}
+                        </span>
+                      ))}
+                      {(proj.technologies || []).length > 4 && (
+                        <span className="px-1.5 py-0.5 rounded-md text-[10px] bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-medium">
+                          +{(proj.technologies || []).length - 4}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-200/80 dark:border-slate-700/80 text-xs">
+                    <div className="flex items-center gap-2">
+                      {proj.github && (
+                        <a href={proj.github} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg text-slate-500 hover:text-black dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" title="View GitHub Repo">
+                          <Github className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                      {proj.liveDemo && (
+                        <a href={proj.liveDemo} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" title="View Live Demo">
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => startEdit(proj)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-indigo-500 hover:bg-slate-100 border border-slate-200 dark:border-slate-600 shadow-xs transition-colors"
+                      >
+                        <Edit className="w-3 h-3" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to delete "${proj.title}"?`)) onDelete(proj.id);
+                        }}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        title="Delete project"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

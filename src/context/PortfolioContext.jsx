@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { defaultPortfolioData } from '../data/defaultData';
-import { loadStoredData, saveStoredData, resetStoredData, exportDataAsJSON } from '../utils/storage';
+import { loadStoredData, saveStoredData, resetStoredData, exportDataAsJSON, dedupeList } from '../utils/storage';
 import { getApiUrl } from '../utils/apiConfig';
 
 const PortfolioContext = createContext(null);
@@ -25,7 +25,7 @@ export const PortfolioProvider = ({ children }) => {
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [isAiOpen, setIsAiOpen] = useState(false);
 
-  // Load live data from MongoDB Atlas on startup
+  // Load live data from MongoDB Atlas on startup with strict deduplication
   useEffect(() => {
     let isMounted = true;
     fetch(getApiUrl('/api/portfolio'))
@@ -34,10 +34,14 @@ export const PortfolioProvider = ({ children }) => {
         if (isMounted && cloudData && cloudData.profile) {
           setData(prev => {
             const merged = {
-              ...prev,
-              ...cloudData,
-              profile: { ...prev.profile, ...cloudData.profile },
-              adminConfig: { ...prev.adminConfig, ...(cloudData.adminConfig || {}) }
+              profile: { ...defaultPortfolioData.profile, ...prev.profile, ...cloudData.profile },
+              education: dedupeList(cloudData.education && cloudData.education.length ? cloudData.education : (prev.education || defaultPortfolioData.education)),
+              skills: dedupeList(cloudData.skills && cloudData.skills.length ? cloudData.skills : (prev.skills || defaultPortfolioData.skills)),
+              projects: dedupeList(cloudData.projects && cloudData.projects.length ? cloudData.projects : (prev.projects || defaultPortfolioData.projects)),
+              certificates: dedupeList(cloudData.certificates && cloudData.certificates.length ? cloudData.certificates : (prev.certificates || defaultPortfolioData.certificates)),
+              achievements: dedupeList(cloudData.achievements && cloudData.achievements.length ? cloudData.achievements : (prev.achievements || defaultPortfolioData.achievements)),
+              messages: dedupeList(cloudData.messages || prev.messages || []),
+              adminConfig: { ...defaultPortfolioData.adminConfig, ...prev.adminConfig, ...(cloudData.adminConfig || {}) }
             };
             saveStoredData(merged);
             return merged;
