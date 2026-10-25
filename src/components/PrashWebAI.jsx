@@ -24,10 +24,37 @@ export const PrashWebAI = () => {
   // Voice synthesis & recognition states
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speakingMsgId, setSpeakingMsgId] = useState(null);
   const [isListening, setIsListening] = useState(false);
+  const [availableVoices, setAvailableVoices] = useState([]);
   const recognitionRef = useRef(null);
-
+  const activeUtteranceRef = useRef(null);
   const welcomeSpokenRef = useRef(false);
+
+  // Load and cache browser speech synthesis voices asynchronously
+  useEffect(() => {
+    if (!('speechSynthesis' in window)) return;
+
+    const loadVoices = () => {
+      try {
+        const vList = window.speechSynthesis.getVoices();
+        if (vList && vList.length > 0) {
+          setAvailableVoices(vList);
+        }
+      } catch (err) {
+        console.warn('Error loading speech voices:', err);
+      }
+    };
+
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, []);
 
   const [messages, setMessages] = useState([
     {
@@ -35,6 +62,7 @@ export const PrashWebAI = () => {
       sender: 'bot',
       text: `Welcome to Prashant AI! What can I help you with? I can answer questions about Prashant's BCA education, programming skills (Java, Web, SQL, Python), projects, certificates, achievements, CV, or how to contact him.`,
       actions: [
+        { label: "🔊 Listen Welcome Voice", type: "voice_welcome" },
         { label: "Who is Prashant?", type: "quick", question: "Who is Prashant Singh?" },
         { label: "What projects has he made?", type: "quick", question: "What projects has Prashant made?" },
         { label: "What skills does he know?", type: "quick", question: "What programming languages does he know?" },
@@ -65,20 +93,20 @@ export const PrashWebAI = () => {
       .trim();
   };
 
-  // Helper to select an Indian Female voice
+  // Helper to select an Indian Female voice (or best natural fallback)
   const getIndianFemaleVoice = () => {
     if (!('speechSynthesis' in window)) return null;
-    const availableVoices = window.speechSynthesis.getVoices();
-    if (!availableVoices || availableVoices.length === 0) return null;
+    const vList = availableVoices.length > 0 ? availableVoices : (window.speechSynthesis.getVoices() || []);
+    if (!vList || vList.length === 0) return null;
 
     // Female names commonly associated with Indian English / Hindi voices:
     // Windows: "Microsoft Heera", "Microsoft Neerja", "Microsoft Swara", "Microsoft Kalpana"
     // macOS / iOS: "Veena", "Lekha", "Aditi", "Kiran"
     // Android / Chrome: "Google हिन्दी", "Google English (India)"
-    const indianFemaleKeywords = ['heera', 'neerja', 'swara', 'veena', 'aditi', 'lekha', 'kalpana', 'kiran', 'pooja'];
+    const indianFemaleKeywords = ['heera', 'neerja', 'swara', 'veena', 'aditi', 'lekha', 'kalpana', 'kiran', 'pooja', 'shruti', 'sangeeta'];
 
     // 1. Look for an en-IN / India voice that explicitly matches a female name
-    const matchedIndianFemale = availableVoices.find(v => {
+    const matchedIndianFemale = vList.find(v => {
       const name = v.name.toLowerCase();
       const lang = v.lang.toLowerCase().replace('_', '-');
       const isIndian = lang.includes('en-in') || lang.includes('hi') || name.includes('india');
@@ -88,7 +116,7 @@ export const PrashWebAI = () => {
     if (matchedIndianFemale) return matchedIndianFemale;
 
     // 2. Look for any Indian English voice (not explicitly male like Ravi/Rishi)
-    const anyIndianVoice = availableVoices.find(v => {
+    const anyIndianVoice = vList.find(v => {
       const name = v.name.toLowerCase();
       const lang = v.lang.toLowerCase().replace('_', '-');
       const isIndian = lang.includes('en-in') || name.includes('india');
@@ -98,75 +126,116 @@ export const PrashWebAI = () => {
     if (anyIndianVoice) return anyIndianVoice;
 
     // 3. Any en-IN voice
-    const anyEnIn = availableVoices.find(v => v.lang.toLowerCase().replace('_', '-').startsWith('en-in'));
+    const anyEnIn = vList.find(v => v.lang.toLowerCase().replace('_', '-').startsWith('en-in'));
     if (anyEnIn) return anyEnIn;
 
     // 4. Any Hindi / Indian language voice
-    const anyHindi = availableVoices.find(v => v.lang.toLowerCase().startsWith('hi'));
+    const anyHindi = vList.find(v => v.lang.toLowerCase().startsWith('hi'));
     if (anyHindi) return anyHindi;
 
     // 5. Fallback: Any gentle natural female voice
-    const fallbackFemale = availableVoices.find(v => {
+    const fallbackFemale = vList.find(v => {
       const name = v.name.toLowerCase();
-      return name.includes('female') || name.includes('zira') || name.includes('samantha') || name.includes('victoria') || name.includes('karen');
+      return name.includes('female') || name.includes('zira') || name.includes('samantha') || name.includes('victoria') || name.includes('karen') || name.includes('jenny') || name.includes('natural');
     });
     if (fallbackFemale) return fallbackFemale;
 
-    return availableVoices.find(v => v.lang.startsWith('en')) || availableVoices[0];
+    // 6. Any English voice
+    const anyEnglish = vList.find(v => v.lang.toLowerCase().startsWith('en'));
+    if (anyEnglish) return anyEnglish;
+
+    return vList[0] || null;
   };
 
-  // Function to speak any text aloud with Indian Female voice
-  const speakText = (text) => {
+  // Function to speak any text aloud with robust audio queue management
+  const speakText = (text, messageId = null) => {
     if (!('speechSynthesis' in window) || !voiceEnabled) return;
 
     try {
       window.speechSynthesis.cancel(); // Stop any pending speech
+      setIsSpeaking(false);
+      setSpeakingMsgId(null);
 
       const cleaned = cleanTextForSpeech(text);
       if (!cleaned) return;
 
-      const utterance = new SpeechSynthesisUtterance(cleaned);
-      
-      const indianVoice = getIndianFemaleVoice();
-      if (indianVoice) {
-        utterance.voice = indianVoice;
-        utterance.lang = indianVoice.lang || 'en-IN';
-      } else {
-        utterance.lang = 'en-IN';
-      }
+      // Crucial: 50ms delay prevents Chromium race condition where cancel() immediately cancels speak()
+      setTimeout(() => {
+        try {
+          if (!('speechSynthesis' in window)) return;
+          if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+          }
 
-      // Slightly elevated pitch and smooth rate for a warm, clear Indian female tone
-      utterance.pitch = 1.15;
-      utterance.rate = 0.98;
+          const utterance = new SpeechSynthesisUtterance(cleaned);
+          activeUtteranceRef.current = utterance; // Prevent V8 garbage collection mid-speech
+          
+          const chosenVoice = getIndianFemaleVoice();
+          if (chosenVoice) {
+            utterance.voice = chosenVoice;
+            utterance.lang = chosenVoice.lang || 'en-US';
+          } else {
+            utterance.lang = navigator.language || 'en-US';
+          }
 
-      utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
+          // Gentle, warm, natural pacing
+          utterance.pitch = 1.08;
+          utterance.rate = 1.0;
 
-      window.speechSynthesis.speak(utterance);
+          utterance.onstart = () => {
+            setIsSpeaking(true);
+            if (messageId) setSpeakingMsgId(messageId);
+          };
+
+          utterance.onend = () => {
+            setIsSpeaking(false);
+            setSpeakingMsgId(null);
+            activeUtteranceRef.current = null;
+          };
+
+          utterance.onerror = (err) => {
+            console.warn('SpeechSynthesis event notice:', err);
+            setIsSpeaking(false);
+            setSpeakingMsgId(null);
+            activeUtteranceRef.current = null;
+          };
+
+          window.speechSynthesis.speak(utterance);
+        } catch (innerErr) {
+          console.error('Speech speak execution error:', innerErr);
+          setIsSpeaking(false);
+          setSpeakingMsgId(null);
+        }
+      }, 50);
     } catch (err) {
-      console.error('Speech synthesis error:', err);
+      console.error('Speech synthesis setup error:', err);
       setIsSpeaking(false);
+      setSpeakingMsgId(null);
     }
   };
 
   const stopSpeaking = () => {
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {}
     }
     setIsSpeaking(false);
+    setSpeakingMsgId(null);
+    activeUtteranceRef.current = null;
   };
 
-  // Welcome Voice Greeting: "Welcome to Prashant AI, what can I help you with?"
+  // Welcome Voice Greeting: Speaks when chat is opened
   useEffect(() => {
     if (isAiOpen) {
       scrollToBottom();
       setTimeout(() => inputRef.current?.focus(), 200);
 
-      // Speak welcome greeting when chat is opened
-      if (voiceEnabled) {
+      // Attempt polite welcome voice on open
+      if (voiceEnabled && !welcomeSpokenRef.current) {
+        welcomeSpokenRef.current = true;
         const welcomeTimer = setTimeout(() => {
-          speakText("Welcome to Prashant AI, what can I help you with?");
+          speakText("Welcome to Prashant AI! What can I help you with?", 'init-1');
         }, 350);
         return () => clearTimeout(welcomeTimer);
       }
@@ -193,7 +262,7 @@ export const PrashWebAI = () => {
       setVoiceEnabled(false);
     } else {
       setVoiceEnabled(true);
-      speakText("Voice enabled. Welcome to Prashant AI, what can I help you with?");
+      speakText("Voice enabled. Welcome to Prashant AI! What can I help you with?", 'init-1');
     }
   };
 
@@ -272,13 +341,17 @@ export const PrashWebAI = () => {
 
       // Speak answer in voice!
       if (voiceEnabled) {
-        speakText(aiResponse.text);
+        speakText(aiResponse.text, botMsg.id);
       }
     }, 400);
   };
 
   const handleActionClick = (action) => {
     stopSpeaking();
+    if (action.type === 'voice_welcome') {
+      speakText("Welcome to Prashant AI! What can I help you with? I can answer questions about Prashant's BCA education, programming skills, projects, certificates, achievements, and contact details.", 'init-1');
+      return;
+    }
     if (action.type === 'quick') {
       handleSend(action.question);
     } else if (action.type === 'scroll') {
@@ -425,7 +498,11 @@ export const PrashWebAI = () => {
             <div className="px-4 py-1.5 bg-indigo-50 dark:bg-indigo-950/80 border-b border-indigo-200/50 dark:border-indigo-800/50 flex items-center justify-between text-[11px] text-indigo-700 dark:text-indigo-300 animate-fadeIn">
               <div className="flex items-center gap-2">
                 <Volume2 className="w-3.5 h-3.5 animate-pulse text-indigo-600" />
-                <span>Speaking in Indian Female voice...</span>
+                <span>
+                  {getIndianFemaleVoice()?.name 
+                    ? `Speaking (${getIndianFemaleVoice().name.replace('Microsoft', '').replace('Google', '').trim()})...` 
+                    : 'Speaking in AI Voice...'}
+                </span>
               </div>
               <button
                 onClick={stopSpeaking}
@@ -476,6 +553,47 @@ export const PrashWebAI = () => {
                     <div className="whitespace-pre-line leading-relaxed font-normal">
                       {msg.text}
                     </div>
+
+                    {/* Bot Voice Speaker Action */}
+                    {isBot && (
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-200/50 dark:border-slate-700/50 text-[11px]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (speakingMsgId === msg.id && isSpeaking) {
+                              stopSpeaking();
+                            } else {
+                              speakText(msg.text, msg.id);
+                            }
+                          }}
+                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg font-medium transition-all ${
+                            speakingMsgId === msg.id && isSpeaking
+                              ? 'bg-rose-500 text-white shadow-xs animate-pulse'
+                              : 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-slate-600 hover:bg-indigo-50 dark:hover:bg-slate-600'
+                          }`}
+                          title={speakingMsgId === msg.id && isSpeaking ? "Stop Voice" : "Listen to this answer"}
+                        >
+                          {speakingMsgId === msg.id && isSpeaking ? (
+                            <>
+                              <Square className="w-3 h-3 fill-current" />
+                              <span>Stop Voice</span>
+                            </>
+                          ) : (
+                            <>
+                              <Volume2 className="w-3.5 h-3.5" />
+                              <span>Listen Voice</span>
+                            </>
+                          )}
+                        </button>
+
+                        {speakingMsgId === msg.id && isSpeaking && (
+                          <span className="flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold animate-pulse">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                            Speaking...
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     {/* Action buttons attached to message */}
                     {msg.actions && msg.actions.length > 0 && (

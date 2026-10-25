@@ -438,6 +438,10 @@ const ProfileAdminTab = ({ profile, onSave }) => {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
+  useEffect(() => {
+    setForm(profile);
+  }, [profile]);
+
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -643,6 +647,19 @@ const ProfileAdminTab = ({ profile, onSave }) => {
             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
           />
         </div>
+
+        <div>
+          <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            Current Degree & Status (Displayed in About Card)
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. BCA (3rd Year)"
+            value={form.currentDegreeStatus || ''}
+            onChange={(e) => setForm({ ...form, currentDegreeStatus: e.target.value })}
+            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+          />
+        </div>
       </div>
 
       {/* Narrative Bios */}
@@ -828,7 +845,7 @@ const EducationAdminTab = ({ education, onAdd, onUpdate, onDelete }) => {
               <label className="block font-semibold mb-1">Status / Semester</label>
               <input
                 type="text"
-                placeholder="e.g. 2nd Year / 4th Sem or Completed"
+                placeholder="e.g. 3rd Year / 5th Sem or Completed"
                 value={form.currentStatus}
                 onChange={(e) => setForm({ ...form, currentStatus: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600"

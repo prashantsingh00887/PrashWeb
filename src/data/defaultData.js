@@ -23,6 +23,7 @@ export const defaultPortfolioData = {
     github: "https://github.com/prashantsingh00887",
     location: "India",
     status: "Open to Internships & Opportunities",
+    currentDegreeStatus: "BCA (3rd Year)",
     experienceYears: "BCA Undergraduate (Active Student)",
   },
 
@@ -33,7 +34,7 @@ export const defaultPortfolioData = {
       institution: "College / University Name (Editable in Admin)",
       degree: "BCA (Bachelor of Computer Applications)",
       duration: "2024 - 2027 (Expected)",
-      currentStatus: "2nd Year / 4th Semester",
+      currentStatus: "3rd Year / 5th Semester",
       location: "India",
       score: "CGPA: 8.4 / 10",
       description: "Undergoing comprehensive undergraduate training in Computer Applications. Deepening fundamentals in Core Java, Data Structures & Algorithms, Database Management Systems (SQL), Web Technologies, Python, and Software Engineering methodologies.",

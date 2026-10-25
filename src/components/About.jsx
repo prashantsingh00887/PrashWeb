@@ -20,6 +20,10 @@ export const About = () => {
   const { data, setIsAdminOpen, isAdminAuthenticated } = usePortfolio();
   const [activeTab, setActiveTab] = useState('overview');
 
+  const collegeEdu = data.education?.find(e => e.category === 'college') || data.education?.[0];
+  const currentDegreeTitle = data.profile?.currentDegreeStatus || (collegeEdu ? `${(collegeEdu.degree || 'BCA').split('(')[0].trim()} (${collegeEdu.currentStatus || '3rd Year'})` : 'BCA (3rd Year)');
+  const expectedGraduation = collegeEdu?.duration ? `Expected ${collegeEdu.duration.match(/\d{4}/g)?.pop() || '2027'}` : 'Expected 2027';
+
   const tabs = [
     { id: 'overview', label: 'Overview & Bio', icon: User },
     { id: 'objective', label: 'Career Objective', icon: Target },
@@ -72,8 +76,8 @@ export const About = () => {
             </div>
             <div>
               <div className="text-xs font-medium text-slate-500 dark:text-slate-400">Current Degree</div>
-              <div className="text-sm font-bold text-slate-900 dark:text-white">BCA (2nd Year)</div>
-              <div className="text-xs text-indigo-600 dark:text-indigo-400">Expected 2027</div>
+              <div className="text-sm font-bold text-slate-900 dark:text-white">{currentDegreeTitle}</div>
+              <div className="text-xs text-indigo-600 dark:text-indigo-400">{expectedGraduation}</div>
             </div>
           </div>
 

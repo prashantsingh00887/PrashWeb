@@ -33,9 +33,22 @@ export const PortfolioProvider = ({ children }) => {
       .then(cloudData => {
         if (isMounted && cloudData && cloudData.profile) {
           setData(prev => {
+            const rawEdu = cloudData.education && cloudData.education.length ? cloudData.education : (prev.education || defaultPortfolioData.education);
+            const cleanedEdu = Array.isArray(rawEdu) ? rawEdu.map(item => {
+              if (item && item.category === 'college' && (item.currentStatus === '2nd Year / 4th Semester' || item.currentStatus === '2nd Year')) {
+                return { ...item, currentStatus: '3rd Year / 5th Semester' };
+              }
+              return item;
+            }) : rawEdu;
+
+            const profile = { ...defaultPortfolioData.profile, ...prev.profile, ...cloudData.profile };
+            if (!profile.currentDegreeStatus || profile.currentDegreeStatus === 'BCA (2nd Year)') {
+              profile.currentDegreeStatus = 'BCA (3rd Year)';
+            }
+
             const merged = {
-              profile: { ...defaultPortfolioData.profile, ...prev.profile, ...cloudData.profile },
-              education: dedupeList(cloudData.education && cloudData.education.length ? cloudData.education : (prev.education || defaultPortfolioData.education)),
+              profile,
+              education: dedupeList(cleanedEdu),
               skills: dedupeList(cloudData.skills && cloudData.skills.length ? cloudData.skills : (prev.skills || defaultPortfolioData.skills)),
               projects: dedupeList(cloudData.projects && cloudData.projects.length ? cloudData.projects : (prev.projects || defaultPortfolioData.projects)),
               certificates: dedupeList(cloudData.certificates && cloudData.certificates.length ? cloudData.certificates : (prev.certificates || defaultPortfolioData.certificates)),

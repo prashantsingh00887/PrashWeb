@@ -39,6 +39,8 @@ export const Hero = () => {
     }
   };
 
+  const gradYear = data.education?.find(e => e.category === 'college')?.duration?.match(/\d{4}/g)?.pop() || '2027';
+
   return (
     <section 
       id="home" 
@@ -169,7 +171,7 @@ export const Hero = () => {
 
               <div className="p-3 rounded-xl bg-slate-50/80 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800/60 text-center">
                 <div className="text-xl sm:text-2xl font-bold font-heading text-emerald-600 dark:text-emerald-400">
-                  2027
+                  {gradYear}
                 </div>
                 <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">BCA Graduation</div>
               </div>

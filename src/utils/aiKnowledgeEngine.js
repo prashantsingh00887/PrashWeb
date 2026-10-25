@@ -85,7 +85,8 @@ export const queryPrashWebAI = (rawQuestion, portfolioData) => {
       };
     }
 
-    let eduText = `Prashant is pursuing ${col ? col.degree : "BCA"} at ${col ? col.institution : "his college"} (${col ? col.currentStatus : "2nd Year"}, expected graduation in ${col ? col.duration : "2027"}). Current academic standing: ${col ? col.score : "Consistent good standing"}.`;
+    const colStatus = profile?.currentDegreeStatus || (col ? col.currentStatus : "3rd Year");
+    let eduText = `Prashant is pursuing ${col ? col.degree : "BCA"} at ${col ? col.institution : "his college"} (${colStatus}, expected graduation in ${col ? col.duration : "2027"}). Current academic standing: ${col ? col.score : "Consistent good standing"}.`;
     if (sch12 || sch10) {
       eduText += ` Prior to college, he completed his 12th (${sch12?.score || "Science"}) and 10th (${sch10?.score || "Distinction"}).`;
     }

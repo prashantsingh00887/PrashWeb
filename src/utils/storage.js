@@ -26,10 +26,24 @@ export const loadStoredData = (defaultData) => {
     if (!profile.github || profile.github === 'https://github.com' || profile.github === 'https://github.com/prashantsingh') {
       profile.github = 'https://github.com/prashantsingh00887';
     }
+    if (!profile.currentDegreeStatus || profile.currentDegreeStatus === 'BCA (2nd Year)') {
+      profile.currentDegreeStatus = defaultData.profile.currentDegreeStatus || 'BCA (3rd Year)';
+    }
+
+    // Migration: upgrade old "2nd Year" cached education milestone to "3rd Year"
+    let rawEdu = parsed.education || defaultData.education;
+    if (Array.isArray(rawEdu)) {
+      rawEdu = rawEdu.map(item => {
+        if (item && item.category === 'college' && (item.currentStatus === '2nd Year / 4th Semester' || item.currentStatus === '2nd Year')) {
+          return { ...item, currentStatus: '3rd Year / 5th Semester' };
+        }
+        return item;
+      });
+    }
 
     return {
       profile,
-      education: dedupeList(parsed.education || defaultData.education),
+      education: dedupeList(rawEdu),
       skills: dedupeList(parsed.skills || defaultData.skills),
       projects: dedupeList(parsed.projects || defaultData.projects),
       certificates: dedupeList(parsed.certificates || defaultData.certificates),
